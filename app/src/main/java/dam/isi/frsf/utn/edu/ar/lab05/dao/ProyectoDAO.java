@@ -5,7 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dam.isi.frsf.utn.edu.ar.lab05.modelo.Prioridad;
@@ -73,8 +75,17 @@ public class ProyectoDAO {
     }
 
     public void nuevaTarea(Tarea t){
-
+        ContentValues nuevosValores = new ContentValues();
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.TAREA,t.getDescripcion());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.HORAS_PLANIFICADAS,t.getHorasEstimadas());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.MINUTOS_TRABAJADOS,t.getMinutosTrabajados());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata._ID,t.getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.RESPONSABLE,t.getResponsable().getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PROYECTO,t.getProyecto().getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.FINALIZADA,t.getFinalizada());
+        db.insert(ProyectoDBMetadata.TABLA_TAREAS_ALIAS,ProyectoDBMetadata.TABLA_TAREAS,nuevosValores);
     }
+
 
     public void actualizarTarea(Tarea t){
 
@@ -88,8 +99,20 @@ public class ProyectoDAO {
         return null;
     }
 
-    public List<Usuario> listarUsuarios(){
-        return null;
+        public List<Usuario> listarUsuarios()
+    {
+        open(false);
+        Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_USUARIOS,new String[]{});
+        List<Usuario> listaUsuario = new ArrayList<Usuario>();
+        while(!cursorListarDB.moveToNext()){
+            Usuario nuevo = new Usuario();
+            nuevo.setNombre(cursorListarDB.getString(0));
+            nuevo.setCorreoElectronico(cursorListarDB.getString(1));
+            listaUsuario.add(nuevo);
+        }
+        cursorListarDB.close();
+        
+        return listaUsuario;
     }
 
     public void finalizar(Integer idTarea){

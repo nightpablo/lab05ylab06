@@ -89,4 +89,11 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode, Intent data){
+        if (resultCode==RESULT_OK) {
+            String res = data.getExtras().getString("resultado");
+        }
+    }
 }
