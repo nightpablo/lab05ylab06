@@ -24,28 +24,55 @@ import dam.isi.frsf.utn.edu.ar.lab05.modelo.Usuario;
 
 public class AltaTareaActivity extends AppCompatActivity {
 
-    EditText descripcionTarea;
-    EditText horaEstimada;
-    SeekBar barraPrioridad;
-    Spinner responsable;
-    Button guardar;
-    Button cancelar;
-    TextView prioridad;
-    ProyectoDAO registro;
-    List<Prioridad> listaPrioridad;
+    private EditText descripcionTarea;
+    private EditText horaEstimada;
+    private SeekBar barraPrioridad;
+    private Spinner responsable;
+    private Button guardar;
+    private Button cancelar;
+    private TextView prioridad;
+    private ProyectoDAO registro;
+    private List<Prioridad> listaPrioridad;
+    private Tarea tarea;
+    private boolean esEditable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alta_tarea);
+
         registro = new ProyectoDAO(AltaTareaActivity.this);
+
         descripcionTarea = (EditText) findViewById(R.id.editText);
         horaEstimada = (EditText) findViewById(R.id.editText2);
         barraPrioridad = (SeekBar) findViewById(R.id.seekBar);
-        barraPrioridad.setMax(3);
-        barraPrioridad.setProgress(0);
-        listaPrioridad = registro.listarPrioridades();
         prioridad = (TextView) findViewById(R.id.textView4);
+        responsable = (Spinner) findViewById(R.id.spinner);
+        guardar = (Button) findViewById(R.id.btnGuardar);
+        cancelar = (Button) findViewById(R.id.btnCanelar);
+
+
+        barraPrioridad.setMax(3);
+        ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,registro.listarUsuarios());
+        adaptador.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        responsable.setAdapter(adaptador);
+
+        //if(!(getIntent().getSerializableExtra("ID_TAREA") instanceof Integer)) {
+        tarea = new Tarea();
+        barraPrioridad.setProgress(0);
+        esEditable=false;
+        if(getIntent().getExtras().getInt("ID_TAREA")!=0){
+            tarea = registro.buscarTarea(getIntent().getExtras().getInt("ID_TAREA"));
+            barraPrioridad.setProgress(tarea.getPrioridad().getId());
+            responsable.setSelection(tarea.getResponsable().getId());
+            descripcionTarea.setText(tarea.getDescripcion());
+            horaEstimada.setText(tarea.getHorasEstimadas());
+            esEditable=true;
+        }
+
+
+
+        listaPrioridad = registro.listarPrioridades();
         prioridad.setText("Prioridad: "+listaPrioridad.get(0).toString());
 
         barraPrioridad.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -62,16 +89,12 @@ public class AltaTareaActivity extends AppCompatActivity {
         });
 
 
-        responsable = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,registro.listarUsuarios());
-        adaptador.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
 
-        //Toast.makeText(AltaTareaActivity.this, adaptador.getItem(0).toString(), Toast.LENGTH_SHORT).show();
 
-        responsable.setAdapter(adaptador);
 
-        guardar = (Button) findViewById(R.id.btnGuardar);
+
+
 
         guardar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,7 +106,6 @@ public class AltaTareaActivity extends AppCompatActivity {
                 else if(responsable.getSelectedItemPosition()==-1)
                     Toast.makeText(AltaTareaActivity.this,"Debe seleccionar un responsable de la tarea",Toast.LENGTH_SHORT).show();
                 else{
-                    Tarea tarea = new Tarea();
                     tarea.setDescripcion(descripcionTarea.getText().toString());
                     tarea.setHorasEstimadas(Integer.parseInt(horaEstimada.getText().toString()));
                     tarea.setMinutosTrabajados(0);
@@ -92,16 +114,22 @@ public class AltaTareaActivity extends AppCompatActivity {
                     tarea.setPrioridad(listaPrioridad.get(barraPrioridad.getProgress()));
 
                     tarea.setResponsable((Usuario) responsable.getSelectedItem());
-
-                    registro.nuevaTarea(tarea);
+                    if(esEditable) {
+                        registro.actualizarTarea(tarea);
+                        Toast.makeText(AltaTareaActivity.this,"Se editó la tarea",Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        registro.nuevaTarea(tarea);
+                        Toast.makeText(AltaTareaActivity.this,"Se creó una nueva tarea",Toast.LENGTH_SHORT).show();
+                    }
                     Intent actividad = new Intent();
                     setResult(RESULT_OK,actividad);
-                    Toast.makeText(AltaTareaActivity.this,"Se creó una nueva tarea",Toast.LENGTH_SHORT).show();
+
                     finish();
                 }
             }
         });
-        cancelar = (Button) findViewById(R.id.btnCanelar);
+
         cancelar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

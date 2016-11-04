@@ -33,8 +33,8 @@ public class Prioridad {
         this.prioridad = prioridad;
     }
 
-    @Override
+    /*@Override
     public String toString(){
         return prioridad;
-    }
+    }*/
 }

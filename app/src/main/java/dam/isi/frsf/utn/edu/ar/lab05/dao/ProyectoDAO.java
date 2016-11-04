@@ -161,6 +161,64 @@ public class ProyectoDAO {
         return listaProyecto;
     }
 
+    public List<Tarea> listarTareas(Integer idProyecto)
+    {
+        open(false);
+        Cursor cursorListarDB = listaTareas(idProyecto);
+        List<Tarea> listaTarea = new ArrayList<Tarea>();
+        if(cursorListarDB.moveToFirst())
+            do{
+                /*
+                Log.i("Prueba",cursorListarDB.getString(0)); //IDENTIFICADOR
+                Log.i("Prueba",cursorListarDB.getString(1)); //DESCRIPCION
+                Log.i("Prueba",cursorListarDB.getString(2)); //HORAS_PLANIFICADAS
+                Log.i("Prueba",cursorListarDB.getString(3)); //MINUTOS_TRABAJDOS
+                Log.i("Prueba",cursorListarDB.getString(4)); //FINALIZADA
+                Log.i("Prueba",cursorListarDB.getString(5)); //ID_RESPONSABLE
+                Log.i("Prueba",cursorListarDB.getString(6)); //ID_PRIORIDAD
+                Log.i("Prueba",cursorListarDB.getString(7)); //ID_Proyecto*/
+                /*Tarea nuevo = new Tarea(
+                        Integer.parseInt(cursorListarDB.getString(0)),
+                        Integer.parseInt(cursorListarDB.getString(2)),
+                        Integer.parseInt(cursorListarDB.getString(3)),
+                        Boolean.parseBoolean(cursorListarDB.getString(7)),
+                        buscarProyecto(Integer.parseInt(cursorListarDB.getString(6))),
+                        buscarPrioridad(Integer.parseInt(cursorListarDB.getString(4))),
+                        buscarUsuario(Integer.parseInt(cursorListarDB.getString(5))));
+                nuevo.setDescripcion(cursorListarDB.getString(1));*/
+                Tarea nuevo = new Tarea();
+                nuevo.setId(Integer.parseInt(cursorListarDB.getString(0)));
+                nuevo.setDescripcion(cursorListarDB.getString(1));
+                nuevo.setHorasEstimadas(Integer.parseInt(cursorListarDB.getString(2)));
+                nuevo.setMinutosTrabajados(Integer.parseInt(cursorListarDB.getString(3)));
+                nuevo.setPrioridad(buscarPrioridad(Integer.parseInt(cursorListarDB.getString(4))));
+                nuevo.setResponsable(buscarUsuario(Integer.parseInt(cursorListarDB.getString(5))));
+                switch(cursorListarDB.getString(6)){
+                    case "Urgente":
+                        nuevo.setProyecto(buscarProyecto(1));
+                        break;
+                    case "Alta":
+                        nuevo.setProyecto(buscarProyecto(2));
+                        break;
+                    case "Media":
+                        nuevo.setProyecto(buscarProyecto(3));
+                        break;
+                    case "Baja":
+                        nuevo.setProyecto(buscarProyecto(4));
+                        break;
+                }
+
+                //nuevo.setProyecto(buscarProyecto(Integer.parseInt(cursorListarDB.getString(6))));
+                nuevo.setFinalizada(Boolean.parseBoolean(cursorListarDB.getString(7)));
+
+                //listaTarea.add(nuevo);
+            }while(cursorListarDB.moveToNext());
+
+        cursorListarDB.close();
+
+        return listaTarea;
+    }
+
     public void finalizar(Integer idTarea){
         //Establecemos los campos-valores a actualizar
         ContentValues valores = new ContentValues();
@@ -187,6 +245,22 @@ public class ProyectoDAO {
     public Proyecto buscarProyecto(int ID){
         List<Proyecto> listaProyecto = listarProyecto();
         for(Proyecto i: listaProyecto)
+            if(i.getId()==ID)
+                return i;
+        return null;
+    }
+
+    public Tarea buscarTarea(int ID){
+        List<Tarea> listaTarea = listarTareas(1);
+        for(Tarea i: listaTarea)
+            if(i.getId()==ID)
+                return i;
+        return null;
+    }
+
+    public Usuario buscarUsuario(int ID){
+        List<Usuario> listaUsuario = listarUsuarios();
+        for(Usuario i:listaUsuario)
             if(i.getId()==ID)
                 return i;
         return null;
