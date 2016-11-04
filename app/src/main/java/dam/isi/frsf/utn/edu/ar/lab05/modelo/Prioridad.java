@@ -32,4 +32,9 @@ public class Prioridad {
     public void setPrioridad(String prioridad) {
         this.prioridad = prioridad;
     }
+
+    @Override
+    public String toString(){
+        return prioridad;
+    }
 }

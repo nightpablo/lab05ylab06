@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intActAlta= new Intent(MainActivity.this,AltaTareaActivity.class);
                 intActAlta.putExtra("ID_TAREA", 0);
-                startActivity(intActAlta);
+                //startActivity(intActAlta);
+                startActivityForResult(intActAlta,1234);
             }
         });
         lvTareas = (ListView) findViewById(R.id.listaTareas);
@@ -92,8 +93,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult (int requestCode, int resultCode, Intent data){
-        if (resultCode==RESULT_OK) {
-            String res = data.getExtras().getString("resultado");
+        if (requestCode==1234 && resultCode==RESULT_OK) {
+            onResume();
+            //String res = data.getExtras().getString("resultado");
+
         }
     }
 }

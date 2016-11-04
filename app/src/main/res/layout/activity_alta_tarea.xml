@@ -8,7 +8,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="dam.isi.frsf.utn.edu.ar.lab05.AltaTareaActivity">
+    tools:context="dam.isi.frsf.utn.edu.ar.lab05.AltaTareaActivity"
+    android:weightSum="1">
 
     <TextView
         android:layout_width="match_parent"
@@ -68,8 +69,9 @@
 
     <Spinner
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner" />
+        android:layout_height="36dp"
+        android:id="@+id/spinner"
+        style="@android:style/Widget.Spinner.DropDown"/>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

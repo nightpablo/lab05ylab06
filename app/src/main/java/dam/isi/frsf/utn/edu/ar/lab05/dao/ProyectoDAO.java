@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dam.isi.frsf.utn.edu.ar.lab05.modelo.Prioridad;
+import dam.isi.frsf.utn.edu.ar.lab05.modelo.Proyecto;
 import dam.isi.frsf.utn.edu.ar.lab05.modelo.Tarea;
 import dam.isi.frsf.utn.edu.ar.lab05.modelo.Usuario;
 
@@ -79,16 +80,25 @@ public class ProyectoDAO {
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.TAREA,t.getDescripcion());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.HORAS_PLANIFICADAS,t.getHorasEstimadas());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.MINUTOS_TRABAJADOS,t.getMinutosTrabajados());
-        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata._ID,t.getId());
-        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.RESPONSABLE,t.getResponsable().getId());
-        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PROYECTO,t.getProyecto().getId());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.FINALIZADA,t.getFinalizada());
-        db.insert(ProyectoDBMetadata.TABLA_TAREAS_ALIAS,ProyectoDBMetadata.TABLA_TAREAS,nuevosValores);
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PROYECTO,t.getProyecto().getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PRIORIDAD,t.getPrioridad().getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.RESPONSABLE,t.getResponsable().getId());
+        db.insert(ProyectoDBMetadata.TABLA_TAREAS,ProyectoDBMetadata.TABLA_TAREAS,nuevosValores);
     }
 
 
     public void actualizarTarea(Tarea t){
-
+        open(true);
+        ContentValues nuevosValores = new ContentValues();
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.TAREA,t.getDescripcion());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.HORAS_PLANIFICADAS,t.getHorasEstimadas());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.MINUTOS_TRABAJADOS,t.getMinutosTrabajados());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.FINALIZADA,t.getFinalizada());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PROYECTO,t.getProyecto().getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PRIORIDAD,t.getPrioridad().getId());
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.RESPONSABLE,t.getResponsable().getId());
+        db.update(ProyectoDBMetadata.TABLA_TAREAS,nuevosValores,"_ID="+t.getId(),null);
     }
 
     public void borrarTarea(Tarea t){
@@ -96,23 +106,59 @@ public class ProyectoDAO {
     }
 
     public List<Prioridad> listarPrioridades(){
-        return null;
+        open(false);
+        Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_PRIORIDAD,null);
+        List<Prioridad> listaPrioridad = new ArrayList<Prioridad>();
+        if(cursorListarDB.moveToFirst())
+            do{
+                Prioridad nuevo = new Prioridad();
+                nuevo.setId(Integer.parseInt(cursorListarDB.getString(0)));
+                nuevo.setPrioridad(cursorListarDB.getString(1));
+
+                listaPrioridad.add(nuevo);
+            }while(cursorListarDB.moveToNext());
+
+        cursorListarDB.close();
+
+        return listaPrioridad;
     }
 
         public List<Usuario> listarUsuarios()
     {
         open(false);
-        Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_USUARIOS,new String[]{});
+        Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_USUARIOS,null);
         List<Usuario> listaUsuario = new ArrayList<Usuario>();
-        while(!cursorListarDB.moveToNext()){
-            Usuario nuevo = new Usuario();
-            nuevo.setNombre(cursorListarDB.getString(0));
-            nuevo.setCorreoElectronico(cursorListarDB.getString(1));
-            listaUsuario.add(nuevo);
-        }
+        if(cursorListarDB.moveToFirst())
+            do{
+                Usuario nuevo = new Usuario();
+                nuevo.setId(Integer.parseInt(cursorListarDB.getString(0)));
+                nuevo.setNombre(cursorListarDB.getString(1));
+                nuevo.setCorreoElectronico(cursorListarDB.getString(2));
+                listaUsuario.add(nuevo);
+            }while(cursorListarDB.moveToNext());
+
         cursorListarDB.close();
-        
+
         return listaUsuario;
+    }
+
+    public List<Proyecto> listarProyecto()
+    {
+        open(false);
+        Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_PROYECTO,null);
+        List<Proyecto> listaProyecto = new ArrayList<Proyecto>();
+        if(cursorListarDB.moveToFirst())
+            do{
+                Proyecto nuevo = new Proyecto();
+                nuevo.setId(Integer.parseInt(cursorListarDB.getString(0)));
+                nuevo.setNombre(cursorListarDB.getString(1));
+
+                listaProyecto.add(nuevo);
+            }while(cursorListarDB.moveToNext());
+
+        cursorListarDB.close();
+
+        return listaProyecto;
     }
 
     public void finalizar(Integer idTarea){
@@ -127,6 +173,22 @@ public class ProyectoDAO {
         // retorna una lista de todas las tareas que tardaron más (en exceso) o menos (por defecto)
         // que el tiempo planificado.
         // si la bandera soloTerminadas es true, se busca en las tareas terminadas, sino en todas.
+        return null;
+    }
+
+    public Prioridad buscarPrioridad(int ID){
+        List<Prioridad> listaPrioridad = listarPrioridades();
+        for(Prioridad i: listaPrioridad)
+            if(i.getId()==ID)
+                return i;
+        return null;
+    }
+
+    public Proyecto buscarProyecto(int ID){
+        List<Proyecto> listaProyecto = listarProyecto();
+        for(Proyecto i: listaProyecto)
+            if(i.getId()==ID)
+                return i;
         return null;
     }
 

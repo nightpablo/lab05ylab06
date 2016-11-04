@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.Serializable;
+import java.util.List;
 
 import dam.isi.frsf.utn.edu.ar.lab05.dao.ProyectoDAO;
 import dam.isi.frsf.utn.edu.ar.lab05.modelo.Prioridad;
@@ -30,6 +32,7 @@ public class AltaTareaActivity extends AppCompatActivity {
     Button cancelar;
     TextView prioridad;
     ProyectoDAO registro;
+    List<Prioridad> listaPrioridad;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,14 +42,16 @@ public class AltaTareaActivity extends AppCompatActivity {
         descripcionTarea = (EditText) findViewById(R.id.editText);
         horaEstimada = (EditText) findViewById(R.id.editText2);
         barraPrioridad = (SeekBar) findViewById(R.id.seekBar);
-        barraPrioridad.setMax(4);
+        barraPrioridad.setMax(3);
         barraPrioridad.setProgress(0);
+        listaPrioridad = registro.listarPrioridades();
         prioridad = (TextView) findViewById(R.id.textView4);
-        prioridad.setText("Prioridad: 1");
+        prioridad.setText("Prioridad: "+listaPrioridad.get(0).toString());
+
         barraPrioridad.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                prioridad.setText("Prioridad: "+progress);
+                prioridad.setText("Prioridad: "+listaPrioridad.get(barraPrioridad.getProgress()).toString());
             }
 
             @Override
@@ -58,8 +63,12 @@ public class AltaTareaActivity extends AppCompatActivity {
 
 
         responsable = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),R.layout.support_simple_spinner_dropdown_item,registro.listarUsuarios());
+        ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,registro.listarUsuarios());
+        adaptador.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+
         //Toast.makeText(AltaTareaActivity.this, adaptador.getItem(0).toString(), Toast.LENGTH_SHORT).show();
+
         responsable.setAdapter(adaptador);
 
         guardar = (Button) findViewById(R.id.btnGuardar);
@@ -77,15 +86,16 @@ public class AltaTareaActivity extends AppCompatActivity {
                     Tarea tarea = new Tarea();
                     tarea.setDescripcion(descripcionTarea.getText().toString());
                     tarea.setHorasEstimadas(Integer.parseInt(horaEstimada.getText().toString()));
-                    Prioridad unaprioridad = new Prioridad();
-                    unaprioridad.setPrioridad(barraPrioridad.getProgress()+"");
-                    tarea.setPrioridad(unaprioridad);
+                    tarea.setMinutosTrabajados(0);
+                    tarea.setFinalizada(false);
+                    tarea.setProyecto(registro.buscarProyecto(1)); // Proyecto 1 temporal
+                    tarea.setPrioridad(listaPrioridad.get(barraPrioridad.getProgress()));
+
                     tarea.setResponsable((Usuario) responsable.getSelectedItem());
 
                     registro.nuevaTarea(tarea);
-                    //Intent actividad = new Intent();
-                    //actividad.putExtra("resultado",(Serializable) tarea);
-                    //setResult(RESULT_OK,actividad);
+                    Intent actividad = new Intent();
+                    setResult(RESULT_OK,actividad);
                     Toast.makeText(AltaTareaActivity.this,"Se creó una nueva tarea",Toast.LENGTH_SHORT).show();
                     finish();
                 }
@@ -100,6 +110,8 @@ public class AltaTareaActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+
 
 
     }
