@@ -191,27 +191,25 @@ public class ProyectoDAO {
                 nuevo.setDescripcion(cursorListarDB.getString(1));
                 nuevo.setHorasEstimadas(Integer.parseInt(cursorListarDB.getString(2)));
                 nuevo.setMinutosTrabajados(Integer.parseInt(cursorListarDB.getString(3)));
-                nuevo.setPrioridad(buscarPrioridad(Integer.parseInt(cursorListarDB.getString(4))));
                 nuevo.setResponsable(buscarUsuario(Integer.parseInt(cursorListarDB.getString(5))));
                 switch(cursorListarDB.getString(6)){
                     case "Urgente":
-                        nuevo.setProyecto(buscarProyecto(1));
+                        nuevo.setPrioridad(buscarPrioridad(1));
                         break;
                     case "Alta":
-                        nuevo.setProyecto(buscarProyecto(2));
+                        nuevo.setPrioridad(buscarPrioridad(2));
                         break;
                     case "Media":
-                        nuevo.setProyecto(buscarProyecto(3));
+                        nuevo.setPrioridad(buscarPrioridad(3));
                         break;
                     case "Baja":
-                        nuevo.setProyecto(buscarProyecto(4));
+                        nuevo.setPrioridad(buscarPrioridad(4));
                         break;
                 }
+                nuevo.setProyecto(buscarProyecto(Integer.parseInt(cursorListarDB.getString(7))));
+                nuevo.setFinalizada(Boolean.parseBoolean(cursorListarDB.getString(4)));
 
-                //nuevo.setProyecto(buscarProyecto(Integer.parseInt(cursorListarDB.getString(6))));
-                nuevo.setFinalizada(Boolean.parseBoolean(cursorListarDB.getString(7)));
-
-                //listaTarea.add(nuevo);
+                listaTarea.add(nuevo);
             }while(cursorListarDB.moveToNext());
 
         cursorListarDB.close();

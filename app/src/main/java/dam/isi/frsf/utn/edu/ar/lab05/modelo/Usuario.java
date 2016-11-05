@@ -43,8 +43,8 @@ public class Usuario {
         this.correoElectronico = correoElectronico;
     }
 
-    /*@Override
+    @Override
     public String toString(){
         return nombre;
-    }*/
+    }
 }

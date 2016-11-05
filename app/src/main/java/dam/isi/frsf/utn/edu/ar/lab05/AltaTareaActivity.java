@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -53,27 +54,32 @@ public class AltaTareaActivity extends AppCompatActivity {
 
 
         barraPrioridad.setMax(3);
-        ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,registro.listarUsuarios());
-        adaptador.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item);
+        adaptador.add(new Usuario(-1,"[Seleccione un usuario]","Ejemplo@Ejemplo.com"));
+        adaptador.addAll(registro.listarUsuarios());
+
         responsable.setAdapter(adaptador);
 
-        //if(!(getIntent().getSerializableExtra("ID_TAREA") instanceof Integer)) {
+
+
+        listaPrioridad = registro.listarPrioridades();
+        prioridad.setText("Prioridad: "+listaPrioridad.get(0).toString());
         tarea = new Tarea();
         barraPrioridad.setProgress(0);
         esEditable=false;
         if(getIntent().getExtras().getInt("ID_TAREA")!=0){
             tarea = registro.buscarTarea(getIntent().getExtras().getInt("ID_TAREA"));
             barraPrioridad.setProgress(tarea.getPrioridad().getId());
-            responsable.setSelection(tarea.getResponsable().getId());
+            prioridad.setText("Prioridad: "+listaPrioridad.get(tarea.getPrioridad().getId()).toString());
             descripcionTarea.setText(tarea.getDescripcion());
-            horaEstimada.setText(tarea.getHorasEstimadas());
+            horaEstimada.setText(""+tarea.getHorasEstimadas());
             esEditable=true;
+
         }
 
 
 
-        listaPrioridad = registro.listarPrioridades();
-        prioridad.setText("Prioridad: "+listaPrioridad.get(0).toString());
+
 
         barraPrioridad.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -90,12 +96,6 @@ public class AltaTareaActivity extends AppCompatActivity {
 
 
 
-
-
-
-
-
-
         guardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,22 +103,23 @@ public class AltaTareaActivity extends AppCompatActivity {
                     Toast.makeText(AltaTareaActivity.this,"Debe ingresar una descripción de la tarea",Toast.LENGTH_SHORT).show();
                 else if(horaEstimada.getText().toString().equals(""))
                     Toast.makeText(AltaTareaActivity.this,"Debe ingresar una hora estimada de la tarea",Toast.LENGTH_SHORT).show();
-                else if(responsable.getSelectedItemPosition()==-1)
+                else if(((Usuario) responsable.getSelectedItem()).getId()==-1)
                     Toast.makeText(AltaTareaActivity.this,"Debe seleccionar un responsable de la tarea",Toast.LENGTH_SHORT).show();
                 else{
+
                     tarea.setDescripcion(descripcionTarea.getText().toString());
                     tarea.setHorasEstimadas(Integer.parseInt(horaEstimada.getText().toString()));
-                    tarea.setMinutosTrabajados(0);
-                    tarea.setFinalizada(false);
-                    tarea.setProyecto(registro.buscarProyecto(1)); // Proyecto 1 temporal
                     tarea.setPrioridad(listaPrioridad.get(barraPrioridad.getProgress()));
-
                     tarea.setResponsable((Usuario) responsable.getSelectedItem());
+
                     if(esEditable) {
                         registro.actualizarTarea(tarea);
                         Toast.makeText(AltaTareaActivity.this,"Se editó la tarea",Toast.LENGTH_SHORT).show();
                     }
                     else {
+                        tarea.setMinutosTrabajados(0);
+                        tarea.setFinalizada(false);
+                        tarea.setProyecto(registro.buscarProyecto(1)); // Proyecto 1 temporal
                         registro.nuevaTarea(tarea);
                         Toast.makeText(AltaTareaActivity.this,"Se creó una nueva tarea",Toast.LENGTH_SHORT).show();
                     }
