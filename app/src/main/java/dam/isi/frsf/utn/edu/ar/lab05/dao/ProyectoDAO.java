@@ -76,6 +76,7 @@ public class ProyectoDAO {
     }
 
     public void nuevaTarea(Tarea t){
+        open(true); //Abrimos la bd para escritura
         ContentValues nuevosValores = new ContentValues();
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.TAREA,t.getDescripcion());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.HORAS_PLANIFICADAS,t.getHorasEstimadas());
@@ -85,28 +86,35 @@ public class ProyectoDAO {
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PRIORIDAD,t.getPrioridad().getId());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.RESPONSABLE,t.getResponsable().getId());
         db.insert(ProyectoDBMetadata.TABLA_TAREAS,ProyectoDBMetadata.TABLA_TAREAS,nuevosValores);
+        close(); //Cerramos
     }
 
 
     public void actualizarTarea(Tarea t){
-        open(true);
+        open(true); //Abrimos la bd para escritura
         ContentValues nuevosValores = new ContentValues();
+        // Para el botón Editar
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.TAREA,t.getDescripcion());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.HORAS_PLANIFICADAS,t.getHorasEstimadas());
-        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.MINUTOS_TRABAJADOS,t.getMinutosTrabajados());
-        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.FINALIZADA,t.getFinalizada());
-        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PROYECTO,t.getProyecto().getId());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.PRIORIDAD,t.getPrioridad().getId());
         nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.RESPONSABLE,t.getResponsable().getId());
+
+        //Para el botón Trabajar
+        nuevosValores.put(ProyectoDBMetadata.TablaTareasMetadata.MINUTOS_TRABAJADOS,t.getMinutosTrabajados());
+
         db.update(ProyectoDBMetadata.TABLA_TAREAS,nuevosValores,"_ID="+t.getId(),null);
+
+        close(); //Cerramos
     }
 
     public void borrarTarea(Tarea t){
-
+        open(true); //Abrimos la bd para escritura
+        db.delete(ProyectoDBMetadata.TABLA_TAREAS,"_ID="+t.getId(),null);
+        close(); //Cerramos
     }
 
     public List<Prioridad> listarPrioridades(){
-        open(false);
+        open(false); //Abrimos la bd para lectura
         Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_PRIORIDAD,null);
         List<Prioridad> listaPrioridad = new ArrayList<Prioridad>();
         if(cursorListarDB.moveToFirst())
@@ -125,7 +133,7 @@ public class ProyectoDAO {
 
         public List<Usuario> listarUsuarios()
     {
-        open(false);
+        open(false); //Abrimos la bd para lectura
         Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_USUARIOS,null);
         List<Usuario> listaUsuario = new ArrayList<Usuario>();
         if(cursorListarDB.moveToFirst())
@@ -144,7 +152,7 @@ public class ProyectoDAO {
 
     public List<Proyecto> listarProyecto()
     {
-        open(false);
+        open(false); //Abrimos la bd para lectura
         Cursor cursorListarDB = db.rawQuery("SELECT * FROM "+ProyectoDBMetadata.TABLA_PROYECTO,null);
         List<Proyecto> listaProyecto = new ArrayList<Proyecto>();
         if(cursorListarDB.moveToFirst())
@@ -163,35 +171,19 @@ public class ProyectoDAO {
 
     public List<Tarea> listarTareas(Integer idProyecto)
     {
-        open(false);
+        open(false); //Abrimos la bd para lectura
         Cursor cursorListarDB = listaTareas(idProyecto);
         List<Tarea> listaTarea = new ArrayList<Tarea>();
         if(cursorListarDB.moveToFirst())
             do{
-                /*
-                Log.i("Prueba",cursorListarDB.getString(0)); //IDENTIFICADOR
-                Log.i("Prueba",cursorListarDB.getString(1)); //DESCRIPCION
-                Log.i("Prueba",cursorListarDB.getString(2)); //HORAS_PLANIFICADAS
-                Log.i("Prueba",cursorListarDB.getString(3)); //MINUTOS_TRABAJDOS
-                Log.i("Prueba",cursorListarDB.getString(4)); //FINALIZADA
-                Log.i("Prueba",cursorListarDB.getString(5)); //ID_RESPONSABLE
-                Log.i("Prueba",cursorListarDB.getString(6)); //ID_PRIORIDAD
-                Log.i("Prueba",cursorListarDB.getString(7)); //ID_Proyecto*/
-                /*Tarea nuevo = new Tarea(
-                        Integer.parseInt(cursorListarDB.getString(0)),
-                        Integer.parseInt(cursorListarDB.getString(2)),
-                        Integer.parseInt(cursorListarDB.getString(3)),
-                        Boolean.parseBoolean(cursorListarDB.getString(7)),
-                        buscarProyecto(Integer.parseInt(cursorListarDB.getString(6))),
-                        buscarPrioridad(Integer.parseInt(cursorListarDB.getString(4))),
-                        buscarUsuario(Integer.parseInt(cursorListarDB.getString(5))));
-                nuevo.setDescripcion(cursorListarDB.getString(1));*/
+
                 Tarea nuevo = new Tarea();
                 nuevo.setId(Integer.parseInt(cursorListarDB.getString(0)));
                 nuevo.setDescripcion(cursorListarDB.getString(1));
                 nuevo.setHorasEstimadas(Integer.parseInt(cursorListarDB.getString(2)));
                 nuevo.setMinutosTrabajados(Integer.parseInt(cursorListarDB.getString(3)));
-                nuevo.setResponsable(buscarUsuario(Integer.parseInt(cursorListarDB.getString(5))));
+                nuevo.setResponsable(buscarUsuario(Integer.parseInt(cursorListarDB.getString(7))));
+
                 switch(cursorListarDB.getString(6)){
                     case "Urgente":
                         nuevo.setPrioridad(buscarPrioridad(1));
@@ -206,8 +198,8 @@ public class ProyectoDAO {
                         nuevo.setPrioridad(buscarPrioridad(4));
                         break;
                 }
-                nuevo.setProyecto(buscarProyecto(Integer.parseInt(cursorListarDB.getString(7))));
-                nuevo.setFinalizada(Boolean.parseBoolean(cursorListarDB.getString(4)));
+                nuevo.setProyecto(buscarProyecto(1));
+                nuevo.setFinalizada(Integer.parseInt(cursorListarDB.getString(4))== 1);
 
                 listaTarea.add(nuevo);
             }while(cursorListarDB.moveToNext());
@@ -221,15 +213,31 @@ public class ProyectoDAO {
         //Establecemos los campos-valores a actualizar
         ContentValues valores = new ContentValues();
         valores.put(ProyectoDBMetadata.TablaTareasMetadata.FINALIZADA,1);
-        SQLiteDatabase mydb =dbHelper.getWritableDatabase();
-        mydb.update(ProyectoDBMetadata.TABLA_TAREAS, valores, "_id=?", new String[]{idTarea.toString()});
+        //SQLiteDatabase mydb =dbHelper.getWritableDatabase();
+        open(true); //Abrimos la bd para escritura
+        db.update(ProyectoDBMetadata.TABLA_TAREAS,valores,"_ID="+idTarea,null);
+        close(); //Cerramos
     }
 
     public List<Tarea> listarDesviosPlanificacion(Boolean soloTerminadas,Integer desvioMaximoMinutos){
         // retorna una lista de todas las tareas que tardaron más (en exceso) o menos (por defecto)
         // que el tiempo planificado.
         // si la bandera soloTerminadas es true, se busca en las tareas terminadas, sino en todas.
-        return null;
+        List<Tarea> listatarea = listarTareas(1);
+        List<Tarea> listaretorno = new ArrayList<Tarea>();
+        for(Tarea i:listatarea){
+            if(!soloTerminadas) {
+                if (Math.abs(i.getMinutosTrabajados() - i.getHorasEstimadas() * 60) < desvioMaximoMinutos)
+                    listaretorno.add(i);
+            }
+            else{
+                if(i.getFinalizada())
+                    if (Math.abs(i.getMinutosTrabajados() - i.getHorasEstimadas() * 60) < desvioMaximoMinutos)
+                        listaretorno.add(i);
+            }
+        }
+        Log.i("Result","Entró");
+        return listaretorno;
     }
 
     public Prioridad buscarPrioridad(int ID){
@@ -251,8 +259,17 @@ public class ProyectoDAO {
     public Tarea buscarTarea(int ID){
         List<Tarea> listaTarea = listarTareas(1);
         for(Tarea i: listaTarea)
-            if(i.getId()==ID)
+            if(i.getId()==ID) {
+
+                /*Log.i("Retorno","ID:"+i.getId()+
+                        ". Descripcion:"+i.getDescripcion()+
+                        ". Finalizada:"+i.getFinalizada()+
+                ". Horas Estimadas:"+i.getHorasEstimadas()+
+                        ". Minutos Trabajados:"+i.getMinutosTrabajados()+
+                ". ID Prioridad:"+i.getPrioridad().getId()+
+                        ". ID Responsable:"+i.getResponsable().getId());*/
                 return i;
+            }
         return null;
     }
 

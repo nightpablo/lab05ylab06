@@ -2,6 +2,7 @@ package dam.isi.frsf.utn.edu.ar.lab05;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -54,11 +55,13 @@ public class AltaTareaActivity extends AppCompatActivity {
 
 
         barraPrioridad.setMax(3);
+        List<Usuario> listaUsuario = registro.listarUsuarios();
         ArrayAdapter<Usuario> adaptador = new ArrayAdapter<Usuario>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item);
         adaptador.add(new Usuario(-1,"[Seleccione un usuario]","Ejemplo@Ejemplo.com"));
-        adaptador.addAll(registro.listarUsuarios());
+        adaptador.addAll(listaUsuario);
 
         responsable.setAdapter(adaptador);
+        responsable.setBackgroundColor(Color.BLACK);
 
 
 
@@ -69,10 +72,16 @@ public class AltaTareaActivity extends AppCompatActivity {
         esEditable=false;
         if(getIntent().getExtras().getInt("ID_TAREA")!=0){
             tarea = registro.buscarTarea(getIntent().getExtras().getInt("ID_TAREA"));
-            barraPrioridad.setProgress(tarea.getPrioridad().getId());
-            prioridad.setText("Prioridad: "+listaPrioridad.get(tarea.getPrioridad().getId()).toString());
+            barraPrioridad.setProgress(tarea.getPrioridad().getId()-1);
+            prioridad.setText("Prioridad: "+listaPrioridad.get(tarea.getPrioridad().getId()-1).toString());
             descripcionTarea.setText(tarea.getDescripcion());
             horaEstimada.setText(""+tarea.getHorasEstimadas());
+            for(int i=0;i<listaUsuario.size();i++){
+                if(listaUsuario.get(i).getId()==tarea.getResponsable().getId()){
+                    responsable.setSelection(i+1);
+                    i=listaUsuario.size();
+                }
+            }
             esEditable=true;
 
         }

@@ -92,4 +92,16 @@ public class Tarea {
     public void setResponsable(Usuario responsable) {
         this.responsable = responsable;
     }
+
+    @Override
+    public String toString() {
+        return  "Proyecto: "+proyecto.getNombre()+
+                "\nID: "+id+"\nDescripción: "+descripcion+
+                "\nHora Estimada: "+horasEstimadas+
+                "\nMinutos Trabajados: "+minutosTrabajados
+                +"\nFinalizada: "+finalizada
+                +"\nPrioridad: "+prioridad.getPrioridad()
+                +"\nResponsable: "+responsable.getNombre();
+
+    }
 }
